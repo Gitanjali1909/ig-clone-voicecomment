@@ -10,8 +10,11 @@ connectDB();
 const app = express();
 app.use(express.json());
 
+// ✅ ROUTES FIRST
 app.use("/api/auth", authRoutes);
 
+
+// ✅ ERROR HANDLER LAST
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
