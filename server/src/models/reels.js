@@ -14,4 +14,4 @@ const reelSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model("Reel", reelSchema);
+export default mongoose.model("reel", reelSchema);

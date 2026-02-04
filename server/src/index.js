@@ -5,7 +5,7 @@ import errorHandler from "./middleware/errormiddleware.js";
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import postRoutes from "./routes/post.routes.js";
-
+import reelRoutes from "./routes/reel.routes.js";
 
 dotenv.config();
 connectDB();
@@ -18,6 +18,7 @@ app.use("/api/auth", authRoutes);
 
 app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/reels", reelRoutes);
 // ✅ ERROR HANDLER LAST
 app.use(errorHandler);
 
