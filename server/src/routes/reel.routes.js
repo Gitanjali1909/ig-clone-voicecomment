@@ -1,5 +1,5 @@
 import express from "express";
-import protect from "../middleware/auth.middleware.js";
+import upload from "../middleware/auth.middleware.js";
 import {
   createReel,
   likeReel,
@@ -8,7 +8,18 @@ import {
 
 const router = express.Router();
 
-router.post("/", protect, createReel);
+router.post(
+  "/",
+  protect,
+  upload.single("video"),
+  createReel
+);
+router.post(
+  "/:reelId",
+  protect,
+  upload.single("audio"),
+  addVoiceNote
+);
 router.put("/:id/like", protect, likeReel);
 router.get("/feed", protect, getReelsFeed);
 

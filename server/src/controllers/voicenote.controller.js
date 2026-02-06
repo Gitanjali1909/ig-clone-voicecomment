@@ -1,12 +1,12 @@
 import VoiceNote from "../models/voicenote.js";
 
 export const addVoiceNote = async (req, res) => {
-  const { audioUrl, duration } = req.body;
+  const { duration } = req.body;
 
   const voice = await VoiceNote.create({
     user: req.userId,
     reel: req.params.reelId,
-    audioUrl,
+    audioUrl: req.file.path,
     duration
   });
 

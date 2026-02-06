@@ -1,11 +1,11 @@
 import Reel from "../models/reels.js";
 
 export const createReel = async (req, res) => {
-  const { videoUrl, caption } = req.body;
+  const { caption } = req.body;
 
   const reel = await Reel.create({
     user: req.userId,
-    videoUrl,
+    videoUrl: req.file.path,
     caption
   });
 
