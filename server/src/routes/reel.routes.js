@@ -1,5 +1,6 @@
 import express from "express";
-import upload from "../middleware/auth.middleware.js";
+import protect from "../middleware/auth.middleware.js";
+import upload from "../middleware/upload.middleware.js";
 import {
   createReel,
   likeReel,
@@ -14,12 +15,7 @@ router.post(
   upload.single("video"),
   createReel
 );
-router.post(
-  "/:reelId",
-  protect,
-  upload.single("audio"),
-  addVoiceNote
-);
+
 router.put("/:id/like", protect, likeReel);
 router.get("/feed", protect, getReelsFeed);
 
