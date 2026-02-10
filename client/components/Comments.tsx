@@ -32,15 +32,14 @@ export default function Comments({ reelId, onClose }: CommentsProps) {
       id: '2',
       username: 'user2',
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user2',
-      audioUrl:
-        'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+      audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
       timestamp: '5m ago',
     },
   ])
 
   const [commentText, setCommentText] = useState('')
 
-  async function addTextComment() {
+  function addTextComment() {
     if (!commentText.trim()) return
 
     const newComment: Comment = {
@@ -51,7 +50,7 @@ export default function Comments({ reelId, onClose }: CommentsProps) {
       timestamp: 'now',
     }
 
-    setComments([...comments, newComment])
+    setComments(prev => [...prev, newComment])
     setCommentText('')
   }
 
@@ -64,11 +63,12 @@ export default function Comments({ reelId, onClose }: CommentsProps) {
       timestamp: 'now',
     }
 
-    setComments([...comments, newComment])
+    setComments(prev => [...prev, newComment])
   }
 
   return (
     <div className="fixed inset-0 bg-black/80 flex flex-col z-50">
+      {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-zinc-800">
         <h2 className="text-lg font-bold text-white">Comments</h2>
 
@@ -76,20 +76,22 @@ export default function Comments({ reelId, onClose }: CommentsProps) {
           onClick={onClose}
           aria-label="Close comments"
           title="Close comments"
-          className="p-2 hover:bg-zinc-800 rounded-full text-white"
+          className="p-2 hover:bg-zinc-800 rounded-full"
         >
-          <MdClose className="w-6 h-6" />
+          <MdClose className="w-6 h-6 text-white" />
         </button>
       </div>
 
+      {/* Comments list */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {comments.map((comment) => (
+        {comments.map(comment => (
           <div key={comment.id} className="flex gap-3">
             <img
               src={comment.avatar || '/placeholder.svg'}
-              alt={`${comment.username}'s avatar`}
+              alt={comment.username}
               className="w-8 h-8 rounded-full"
             />
+
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <span className="font-semibold text-sm text-white">
@@ -112,6 +114,7 @@ export default function Comments({ reelId, onClose }: CommentsProps) {
         ))}
       </div>
 
+      {/* Input area */}
       <div className="border-t border-zinc-800 p-4 space-y-3">
         <VoiceRecorder onUpload={addVoiceComment} />
 
@@ -120,10 +123,8 @@ export default function Comments({ reelId, onClose }: CommentsProps) {
             type="text"
             placeholder="Add a comment..."
             value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            onKeyDown={(e) =>
-              e.key === 'Enter' && addTextComment()
-            }
+            onChange={e => setCommentText(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && addTextComment()}
             className="flex-1 px-3 py-2 bg-zinc-800 text-white placeholder-zinc-500 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
 

@@ -1,5 +1,6 @@
 'use client'
 import { useState, useRef } from 'react'
+import { motion } from 'framer-motion'
 import { MdMic, MdStop } from 'react-icons/md'
 
 interface VoiceRecorderProps {
@@ -71,10 +72,10 @@ export default function VoiceRecorder({ onUpload }: VoiceRecorderProps) {
     <div className="flex flex-col gap-3 p-3 bg-zinc-900 rounded-lg">
       {!preview ? (
         <>
-          <button onClick={recording ? stopRecording : startRecording} className={`flex items-center justify-center gap-2 py-2 rounded-lg font-semibold transition ${recording ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}>
+          <motion.button onClick={recording ? stopRecording : startRecording} animate={recording ? { scale: [1, 1.05, 1] } : {}} transition={{ duration: 1.5, repeat: recording ? Number.POSITIVE_INFINITY : 0 }} className={`flex items-center justify-center gap-2 py-2 rounded-lg font-semibold transition ${recording ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}>
             {recording ? <MdStop className="w-5 h-5" /> : <MdMic className="w-5 h-5" />}
             {recording ? `Stop (${duration}s)` : 'Record'}
-          </button>
+          </motion.button>
           {duration > 0 && !recording && <p className="text-sm text-zinc-400 text-center">Ready to upload</p>}
         </>
       ) : (
