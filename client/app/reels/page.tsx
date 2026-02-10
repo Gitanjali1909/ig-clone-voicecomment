@@ -1,10 +1,39 @@
+'use client'
+import { useEffect, useState } from 'react'
+import ReelCard from '@/components/ReelCard'
+import { apiCall } from '@/lib/api'
+
+interface Reel {
+  id: string
+  videoUrl: string
+  username: string
+  avatar: string
+  likes: number
+  comments: number
+}
+
 export default function ReelsPage() {
-  return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-4">Reels</h1>
-      <div className="bg-zinc-900 rounded-lg p-6 text-center text-zinc-400">
-        <p>Discover amazing reels from creators around the world.</p>
-      </div>
-    </div>
-  )
+  const [reels, setReels] = useState<Reel[]>([])
+  const [page, setPage] = useState(1)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    loadReels()
+  }, [])
+
+  async function loadReels() {
+    setLoading(true)
+    try {
+      const data = await apiCall(`/api/reels?page=${page}`)
+      setReels(data.reels)
+    } catch (e) {
+      console.error('Failed to load reels:', e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading && reels.length === 0) return <div className="h-screen flex items-center justify-center text-white">Loading...</div>
+
+  return <div className="h-screen overflow-y-scroll snap-y snap-mandatory">{reels.map(reel => <ReelCard key={reel.id} reel={reel} />)}</div>
 }
