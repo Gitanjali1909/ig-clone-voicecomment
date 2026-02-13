@@ -1,59 +1,141 @@
 'use client'
 
-interface FollowersModalProps {
-  isOpen: boolean
-  onClose: () => void
-  title: string
+import { useEffect, useState } from 'react'
+import FollowersModal from '@/components/FollowersModal'
+
+interface User {
+  username: string
+  bio: string
+  avatar: string
+  posts: number
+  followers: number
+  following: number
 }
 
-export default function FollowersModal({
-  isOpen,
-  onClose,
-  title,
-}: FollowersModalProps) {
-  if (!isOpen) return null
+type ModalType = 'Followers' | 'Following' | null
 
-  const mockUsers = Array.from({ length: 10 }, (_, i) => ({
-    id: i,
-    username: `user_${i}`,
-    avatar: `https://picsum.photos/50/50?random=modal${i}`,
-  }))
+export default function ProfilePage() {
+  const [user, setUser] = useState<User | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalTitle, setModalTitle] = useState<ModalType>(null)
+
+  useEffect(() => {
+    const mockUser: User = {
+      username: 'pretty_user',
+      bio: 'Building cool things 🚀',
+      avatar: 'https://picsum.photos/200',
+      posts: 24,
+      followers: 128,
+      following: 76,
+    }
+
+    setUser(mockUser)
+  }, [])
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        Loading profile...
+      </div>
+    )
+  }
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-      <div className="bg-gray-900 w-full max-w-md rounded-xl overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-          <h2 className="font-semibold text-white">{title}</h2>
-          <button
-            onClick={onClose}
-            aria-label="Close modal"
-            className="text-gray-400 hover:text-white transition-colors"
-          >
-            ✕
-          </button>
+    <div className="min-h-screen bg-black text-white px-4 py-10">
+      <div className="max-w-4xl mx-auto">
+
+        {/* Profile Header */}
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8">
+
+          {/* Avatar */}
+          <div className="w-32 h-32">
+            <img
+              src={user.avatar}
+              alt={`${user.username} avatar`}
+              className="w-full h-full rounded-full object-cover border border-zinc-700"
+            />
+          </div>
+
+          {/* Info Section */}
+          <div className="flex-1 space-y-4">
+
+            {/* Username + Edit */}
+            <div className="flex items-center gap-4">
+              <h2 className="text-xl font-semibold">
+                {user.username}
+              </h2>
+              <button className="px-4 py-1.5 border border-zinc-700 rounded-lg text-sm hover:bg-zinc-900 transition">
+                Edit Profile
+              </button>
+            </div>
+
+            {/* Stats */}
+            <div className="flex gap-6 text-sm">
+              <span>
+                <strong>{user.posts}</strong> posts
+              </span>
+
+              <button
+                onClick={() => {
+                  setModalTitle('Followers')
+                  setModalOpen(true)
+                }}
+                className="hover:underline"
+              >
+                <strong>{user.followers}</strong> followers
+              </button>
+
+              <button
+                onClick={() => {
+                  setModalTitle('Following')
+                  setModalOpen(true)
+                }}
+                className="hover:underline"
+              >
+                <strong>{user.following}</strong> following
+              </button>
+            </div>
+
+            {/* Bio */}
+            <div>
+              <p className="text-sm text-zinc-300">
+                {user.bio}
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="max-h-96 overflow-y-auto">
-          {mockUsers.map((user) => (
+        {/* Divider */}
+        <div className="border-t border-zinc-800 my-10"></div>
+
+        {/* Posts Grid */}
+        <div className="grid grid-cols-3 gap-1 sm:gap-4">
+          {Array.from({ length: user.posts }).map((_, i) => (
             <div
-              key={user.id}
-              className="flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors"
+              key={i}
+              className="aspect-square bg-zinc-900 hover:opacity-80 transition cursor-pointer"
             >
-              <div className="flex items-center gap-3">
-                <img
-                  src={user.avatar}
-                  alt={user.username}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-                <p className="text-sm text-white">{user.username}</p>
-              </div>
-              <button className="text-sm text-blue-500 font-semibold">
-                Follow
-              </button>
+              <img
+                src={`https://picsum.photos/500?random=post${i}`}
+                alt="Post"
+                className="w-full h-full object-cover"
+              />
             </div>
           ))}
         </div>
+
       </div>
+
+      {modalTitle && (
+        <FollowersModal
+          isOpen={modalOpen}
+          onClose={() => {
+            setModalOpen(false)
+            setModalTitle(null)
+          }}
+          title={modalTitle}
+        />
+      )}
     </div>
   )
 }

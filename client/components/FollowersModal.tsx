@@ -1,12 +1,11 @@
 'use client'
 
-import { useState } from 'react'
-import { MdClose } from 'react-icons/md'
+import { useEffect } from 'react'
 
 interface FollowersModalProps {
   isOpen: boolean
   onClose: () => void
-  title: 'Followers' | 'Following'
+  title: string
 }
 
 export default function FollowersModal({
@@ -14,74 +13,72 @@ export default function FollowersModal({
   onClose,
   title,
 }: FollowersModalProps) {
-  const [followers] = useState(
-    Array.from({ length: 20 }, (_, i) => ({
-      id: i,
-      username: `user_${i + 1}`,
-      avatar: `https://picsum.photos/40/40?random=follower${i}`,
-      isFollowing: i % 3 === 0,
-    }))
-  )
+  useEffect(() => {
+    function handleEsc(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose()
+    }
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEsc)
+      document.body.style.overflow = 'hidden'
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEsc)
+      document.body.style.overflow = 'auto'
+    }
+  }, [isOpen, onClose])
 
   if (!isOpen) return null
 
+  const mockUsers = Array.from({ length: 10 }, (_, i) => ({
+    id: i,
+    username: `user_${i}`,
+    avatar: `https://picsum.photos/100/100?random=${i}`,
+  }))
+
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end z-50">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      onClick={onClose}
+    >
       <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="followers-modal-title"
-        className="w-full bg-black rounded-t-2xl max-h-screen overflow-y-auto"
+        className="w-full max-w-md bg-black border border-zinc-800 rounded-2xl shadow-xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 flex items-center justify-between p-4 border-b border-white/10 bg-black">
-          <h2
-            id="followers-modal-title"
-            className="text-lg font-bold text-white"
-          >
+        {/* Header */}
+        <div className="relative flex items-center justify-center px-4 py-4 border-b border-zinc-800">
+          <h2 className="text-white font-semibold text-sm">
             {title}
           </h2>
-
           <button
-            type="button"
             onClick={onClose}
-            aria-label="Close modal"
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            className="absolute right-4 text-zinc-400 hover:text-white transition"
           >
-            <MdClose className="w-6 h-6 text-white" />
+            ✕
           </button>
         </div>
 
-        <div className="divide-y divide-white/10">
-          {followers.map((user) => (
+        {/* Users */}
+        <div className="max-h-[400px] overflow-y-auto divide-y divide-zinc-800">
+          {mockUsers.map((user) => (
             <div
               key={user.id}
-              className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+              className="flex items-center justify-between px-4 py-3 hover:bg-zinc-900 transition"
             >
               <div className="flex items-center gap-3">
                 <img
                   src={user.avatar}
-                  alt={`${user.username}'s avatar`}
-                  className="w-10 h-10 rounded-full object-cover"
+                  alt={user.username}
+                  className="w-10 h-10 rounded-full object-cover border border-zinc-700"
                 />
-                <p className="text-white font-semibold text-sm">
+                <span className="text-sm text-white">
                   {user.username}
-                </p>
+                </span>
               </div>
 
-              <button
-                type="button"
-                aria-label={
-                  user.isFollowing
-                    ? `Unfollow ${user.username}`
-                    : `Follow ${user.username}`
-                }
-                className={`px-4 py-1.5 rounded-lg font-semibold text-sm transition-colors ${
-                  user.isFollowing
-                    ? 'bg-white/10 text-white hover:bg-white/20'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
-              >
-                {user.isFollowing ? 'Following' : 'Follow'}
+              <button className="text-xs font-semibold px-4 py-1.5 rounded-lg bg-white text-black hover:bg-zinc-200 transition">
+                Follow
               </button>
             </div>
           ))}
