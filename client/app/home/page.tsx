@@ -1,16 +1,17 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
+import { useState } from "react"
 import {
   AiOutlineHeart,
   AiFillHeart,
   AiOutlineComment,
   AiOutlineShareAlt,
   AiOutlineEllipsis,
-  AiOutlineMail
-} from 'react-icons/ai'
-import { motion } from 'framer-motion'
-import Comments from '@/components/Comments'
+  AiOutlineMail,
+} from "react-icons/ai"
+import { motion } from "framer-motion"
+import Comments from "@/components/Comments"
+import Inbox from "@/components/Inbox"
 
 interface Post {
   id: number
@@ -28,34 +29,35 @@ export default function HomePage() {
   const [posts, setPosts] = useState<Post[]>(
     Array.from({ length: 5 }, (_, i) => ({
       id: i,
-      author: 'username',
+      author: "username",
       avatar: `https://picsum.photos/40/40?random=user${i}`,
       image: `https://picsum.photos/600/600?random=post${i}`,
       liked: false,
       likes: 234 + i * 50,
-      caption: 'Amazing moment captured! Love this place.',
+      caption: "Amazing moment captured! Love this place.",
       comments: 12 + i * 2,
-      timestamp: '2 hours ago'
+      timestamp: "2 hours ago",
     }))
   )
 
   const [activePost, setActivePost] = useState<number | null>(null)
+  const [showInbox, setShowInbox] = useState(false)
 
   const stories = Array.from({ length: 8 }, (_, i) => ({
     id: i,
-    username: i === 0 ? 'Your Story' : `user${i}`,
+    username: i === 0 ? "Your Story" : `user${i}`,
     avatar: `https://picsum.photos/60/60?random=story${i}`,
-    hasStory: i !== 0
+    hasStory: i !== 0,
   }))
 
   const toggleLike = (id: number) => {
-    setPosts(prev =>
-      prev.map(p =>
+    setPosts((prev) =>
+      prev.map((p) =>
         p.id === id
           ? {
               ...p,
               liked: !p.liked,
-              likes: p.liked ? p.likes - 1 : p.likes + 1
+              likes: p.liked ? p.likes - 1 : p.likes + 1,
             }
           : p
       )
@@ -66,13 +68,10 @@ export default function HomePage() {
     const url = `${window.location.origin}/home/${postId}`
 
     if (navigator.share) {
-      navigator.share({
-        title: 'Check out this post',
-        url
-      })
+      navigator.share({ title: "Check out this post", url })
     } else {
       navigator.clipboard.writeText(url)
-      alert('Link copied to clipboard!')
+      alert("Link copied to clipboard!")
     }
   }
 
@@ -81,46 +80,56 @@ export default function HomePage() {
       {/* Header */}
       <div className="sticky top-0 bg-black/80 backdrop-blur-md border-b border-white/10 px-4 py-3 flex items-center justify-between z-40">
         <h1 className="text-xl font-black">Instagram</h1>
-        <button
-          aria-label="Open messages"
+
+        <motion.button
+          onClick={() => setShowInbox(true)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+          aria-label="Open inbox"
+          title="Open inbox"
         >
           <AiOutlineMail className="w-6 h-6" />
-        </button>
+        </motion.button>
       </div>
 
       {/* Stories */}
-      <div className="border-b border-white/10 px-4 py-4 overflow-x-auto">
-        <div className="flex gap-4">
-          {stories.map(story => (
-            <motion.div
-              key={story.id}
-              whileHover={{ scale: 1.05 }}
-              className="flex flex-col items-center gap-2 cursor-pointer flex-shrink-0"
-            >
-              <div
-                className={`w-16 h-16 rounded-full p-0.5 flex items-center justify-center ${
-                  story.hasStory
-                    ? 'bg-gradient-to-br from-purple-500 to-pink-500'
-                    : 'bg-white/10'
-                }`}
+      <div className="border-b border-white/10">
+        <div className="px-4 py-4 overflow-x-auto">
+          <div className="flex gap-4">
+            {stories.map((story) => (
+              <motion.div
+                key={story.id}
+                whileHover={{ scale: 1.05 }}
+                className="flex flex-col items-center gap-2 cursor-pointer flex-shrink-0"
               >
-                <img
-                  src={story.avatar}
-                  alt={story.username}
-                  className="w-full h-full rounded-full object-cover border-2 border-black"
-                />
-              </div>
-              <span className="text-xs text-center truncate w-16">
-                {story.username}
-              </span>
-            </motion.div>
-          ))}
+                <div
+                  className={`w-16 h-16 rounded-full p-0.5 flex items-center justify-center ${
+                    story.hasStory
+                      ? "bg-gradient-to-br from-purple-500 to-pink-500"
+                      : "bg-white/10"
+                  }`}
+                >
+                  <img
+                    src={story.avatar}
+                    alt={story.username}
+                    className="w-full h-full rounded-full object-cover border-2 border-black"
+                  />
+                </div>
+
+                <span className="text-xs text-center truncate w-16">
+                  {story.username.length > 8
+                    ? story.username.slice(0, 7) + "."
+                    : story.username}
+                </span>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Posts */}
-      {posts.map(post => (
+      {posts.map((post) => (
         <div key={post.id} className="border-b border-white/10 py-4">
           {/* Post Header */}
           <div className="px-4 flex items-center justify-between mb-4">
@@ -139,8 +148,9 @@ export default function HomePage() {
             </div>
 
             <button
-              aria-label="Post options"
               className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              aria-label="More options"
+              title="More options"
             >
               <AiOutlineEllipsis className="w-5 h-5" />
             </button>
@@ -150,53 +160,47 @@ export default function HomePage() {
           <div className="relative mb-4 w-full aspect-square overflow-hidden bg-gray-900 rounded-lg">
             <img
               src={post.image}
-              alt="User post"
+              alt="Post content"
               className="w-full h-full object-cover"
             />
           </div>
 
           {/* Actions */}
           <div className="px-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex gap-2">
-                <motion.button
-                  aria-label={post.liked ? 'Unlike post' : 'Like post'}
-                  onClick={() => toggleLike(post.id)}
-                  whileTap={{ scale: 0.9 }}
-                  className="icon-button"
-                >
-                  {post.liked ? (
-                    <AiFillHeart className="w-6 h-6 text-red-500" />
-                  ) : (
-                    <AiOutlineHeart className="w-6 h-6 text-white" />
-                  )}
-                </motion.button>
-
-                <motion.button
-                  aria-label="View comments"
-                  onClick={() => setActivePost(post.id)}
-                  whileTap={{ scale: 0.9 }}
-                  className="icon-button"
-                >
-                  <AiOutlineComment className="w-6 h-6 text-white" />
-                </motion.button>
-
-                <motion.button
-                  aria-label="Share post"
-                  onClick={() => handleShare(post.id)}
-                  whileTap={{ scale: 0.9 }}
-                  className="icon-button"
-                >
-                  <AiOutlineShareAlt className="w-6 h-6 text-white" />
-                </motion.button>
-              </div>
-
-              <button
-                aria-label="Save post"
+            <div className="flex gap-2">
+              <motion.button
+                onClick={() => toggleLike(post.id)}
+                whileTap={{ scale: 0.9 }}
                 className="icon-button"
+                aria-label={post.liked ? "Unlike post" : "Like post"}
+                title={post.liked ? "Unlike post" : "Like post"}
               >
-                <AiOutlineHeart className="w-6 h-6 text-white" />
-              </button>
+                {post.liked ? (
+                  <AiFillHeart className="w-6 h-6 text-red-500" />
+                ) : (
+                  <AiOutlineHeart className="w-6 h-6 text-white" />
+                )}
+              </motion.button>
+
+              <motion.button
+                onClick={() => setActivePost(post.id)}
+                whileTap={{ scale: 0.9 }}
+                className="icon-button"
+                aria-label="Open comments"
+                title="Open comments"
+              >
+                <AiOutlineComment className="w-6 h-6 text-white" />
+              </motion.button>
+
+              <motion.button
+                onClick={() => handleShare(post.id)}
+                whileTap={{ scale: 0.9 }}
+                className="icon-button"
+                aria-label="Share post"
+                title="Share post"
+              >
+                <AiOutlineShareAlt className="w-6 h-6 text-white" />
+              </motion.button>
             </div>
 
             <p className="text-white font-semibold text-sm">
@@ -205,14 +209,15 @@ export default function HomePage() {
 
             <div>
               <p className="text-white text-sm">
-                <span className="font-semibold">{post.author}</span>{' '}
+                <span className="font-semibold">{post.author}</span>{" "}
                 {post.caption}
               </p>
 
               <button
-                aria-label="View all comments"
                 onClick={() => setActivePost(post.id)}
                 className="text-gray-400 text-sm hover:text-gray-300 mt-1"
+                aria-label="View all comments"
+                title="View all comments"
               >
                 View all {post.comments} comments
               </button>
@@ -221,13 +226,15 @@ export default function HomePage() {
         </div>
       ))}
 
-      {/* Comments Modal */}
+      {/* Modals */}
       {activePost !== null && (
         <Comments
-          reelId={String(activePost)}
+          reelId={activePost}   // ✅ FIXED: reelId passed
           onClose={() => setActivePost(null)}
         />
       )}
+
+      {showInbox && <Inbox onClose={() => setShowInbox(false)} />}
     </div>
   )
 }
