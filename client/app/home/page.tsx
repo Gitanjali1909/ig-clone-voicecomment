@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import {
   AiOutlineHeart,
   AiFillHeart,
@@ -26,29 +26,57 @@ interface Post {
 }
 
 export default function HomePage() {
-  const [posts, setPosts] = useState<Post[]>(
-    Array.from({ length: 5 }, (_, i) => ({
-      id: i,
-      author: "username",
-      avatar: `https://picsum.photos/40/40?random=user${i}`,
-      image: `https://picsum.photos/600/600?random=post${i}`,
-      liked: false,
-      likes: 234 + i * 50,
-      caption: "Amazing moment captured! Love this place.",
-      comments: 12 + i * 2,
-      timestamp: "2 hours ago",
-    }))
-  )
-
+  const [posts, setPosts] = useState<Post[]>([])
+  const [page, setPage] = useState(0)
   const [activePost, setActivePost] = useState<number | null>(null)
   const [showInbox, setShowInbox] = useState(false)
+  const observerRef = useRef<HTMLDivElement | null>(null)
 
-  const stories = Array.from({ length: 8 }, (_, i) => ({
-    id: i,
-    username: i === 0 ? "Your Story" : `user${i}`,
-    avatar: `https://picsum.photos/60/60?random=story${i}`,
-    hasStory: i !== 0,
-  }))
+  const generatePosts = (pageNumber: number): Post[] => {
+    return Array.from({ length: 5 }, (_, i) => {
+      const id = pageNumber * 5 + i
+      return {
+        id,
+        author: `user${id}`,
+        avatar: `https://picsum.photos/40/40?random=user${id}`,
+        image: `https://picsum.photos/600/600?random=post${id}`,
+        liked: false,
+        likes: 200 + id * 3,
+        caption: "Amazing moment captured! Love this place.",
+        comments: 10 + id,
+        timestamp: "2 hours ago",
+      }
+    })
+  }
+
+  useEffect(() => {
+    setPosts(generatePosts(0))
+  }, [])
+
+  const loadMore = useCallback(() => {
+    const nextPage = page + 1
+    const newPosts = generatePosts(nextPage)
+    setPosts((prev) => [...prev, ...newPosts])
+    setPage(nextPage)
+  }, [page])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore()
+        }
+      },
+      { threshold: 1 }
+    )
+
+    const current = observerRef.current
+    if (current) observer.observe(current)
+
+    return () => {
+      if (current) observer.unobserve(current)
+    }
+  }, [loadMore])
 
   const toggleLike = (id: number) => {
     setPosts((prev) =>
@@ -74,6 +102,13 @@ export default function HomePage() {
       alert("Link copied to clipboard!")
     }
   }
+
+  const stories = Array.from({ length: 8 }, (_, i) => ({
+    id: i,
+    username: i === 0 ? "Your Story" : `user${i}`,
+    avatar: `https://picsum.photos/60/60?random=story${i}`,
+    hasStory: i !== 0,
+  }))
 
   return (
     <div className="max-w-2xl mx-auto pb-8">
@@ -118,9 +153,7 @@ export default function HomePage() {
                 </div>
 
                 <span className="text-xs text-center truncate w-16">
-                  {story.username.length > 8
-                    ? story.username.slice(0, 7) + "."
-                    : story.username}
+                  {story.username}
                 </span>
               </motion.div>
             ))}
@@ -136,7 +169,7 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <img
                 src={post.avatar}
-                alt={post.author}
+                alt={`${post.author}'s profile`}
                 className="w-10 h-10 rounded-full object-cover"
               />
               <div>
@@ -148,7 +181,7 @@ export default function HomePage() {
             </div>
 
             <button
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              className="p-2 hover:bg-white/10 rounded-lg"
               aria-label="More options"
               title="More options"
             >
@@ -226,10 +259,13 @@ export default function HomePage() {
         </div>
       ))}
 
+      {/* Infinite Scroll Trigger */}
+      <div ref={observerRef} className="h-10" />
+
       {/* Modals */}
       {activePost !== null && (
         <Comments
-          reelId={activePost}   // ✅ FIXED: reelId passed
+          reelId={String(activePost)}
           onClose={() => setActivePost(null)}
         />
       )}

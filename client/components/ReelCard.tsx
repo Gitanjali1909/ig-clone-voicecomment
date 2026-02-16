@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   AiOutlineHeart,
@@ -26,6 +26,9 @@ export default function ReelCard({ reel }: { reel: Reel }) {
   const [likeAnimation, setLikeAnimation] = useState(false)
   const [showComments, setShowComments] = useState(false)
 
+  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
+
   const handleLike = () => {
     const newLiked = !liked
     setLiked(newLiked)
@@ -48,20 +51,45 @@ export default function ReelCard({ reel }: { reel: Reel }) {
     }
   }
 
+  // 🔥 Only play when visible
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        if (videoRef.current) {
+          if (entry.isIntersecting) {
+            videoRef.current.play().catch(() => {})
+          } else {
+            videoRef.current.pause()
+          }
+        }
+      },
+      { threshold: 0.8 }
+    )
+
+    const current = containerRef.current
+    if (current) observer.observe(current)
+
+    return () => {
+      if (current) observer.unobserve(current)
+    }
+  }, [])
+
   return (
     <motion.div
+      ref={containerRef}
       initial={{ opacity: 0, x: 100 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -100 }}
       transition={{ duration: 0.3 }}
       className="relative h-screen w-full bg-black snap-start overflow-hidden"
     >
       <video
+        ref={videoRef}
         src={reel.videoUrl}
         className="absolute inset-0 w-full h-full object-cover"
-        autoPlay
         loop
         muted
+        playsInline
       />
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
@@ -71,7 +99,7 @@ export default function ReelCard({ reel }: { reel: Reel }) {
         <div className="flex items-end gap-3 flex-1">
           <img
             src={reel.avatar || '/placeholder.svg'}
-            alt={reel.username}
+            alt={`${reel.username}'s profile`}
             className="w-12 h-12 rounded-full border-2 border-white"
           />
           <div className="flex-1">
@@ -93,6 +121,8 @@ export default function ReelCard({ reel }: { reel: Reel }) {
         <motion.button
           onClick={handleLike}
           className="flex flex-col items-center gap-1.5"
+          aria-label={liked ? 'Unlike reel' : 'Like reel'}
+          title={liked ? 'Unlike reel' : 'Like reel'}
         >
           <motion.div
             animate={
@@ -120,6 +150,8 @@ export default function ReelCard({ reel }: { reel: Reel }) {
         <motion.button
           onClick={() => setShowComments(true)}
           className="flex flex-col items-center gap-1.5"
+          aria-label="Open comments"
+          title="Open comments"
         >
           <AiOutlineComment className="w-7 h-7 text-white" />
           <span className="text-white text-xs font-semibold">
@@ -133,6 +165,8 @@ export default function ReelCard({ reel }: { reel: Reel }) {
         <motion.button
           onClick={handleShare}
           className="flex flex-col items-center gap-1.5"
+          aria-label="Share reel"
+          title="Share reel"
         >
           <AiOutlineShareAlt className="w-7 h-7 text-white" />
         </motion.button>

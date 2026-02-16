@@ -1,12 +1,38 @@
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const page = parseInt(searchParams.get('page') || '1')
-  
-  const mockReels = [
-    { id: '1', videoUrl: 'https://videos.pexels.com/video-files/3373028/3373028-sd_640_360_25fps.mp4', username: 'creator1', avatar: 'https://i.pravatar.cc/40?img=1', likes: 234, comments: 12 },
-    { id: '2', videoUrl: 'https://videos.pexels.com/video-files/3387410/3387410-sd_640_360_25fps.mp4', username: 'creator2', avatar: 'https://i.pravatar.cc/40?img=2', likes: 567, comments: 34 },
-    { id: '3', videoUrl: 'https://videos.pexels.com/video-files/3428136/3428136-sd_640_360_25fps.mp4', username: 'creator3', avatar: 'https://i.pravatar.cc/40?img=3', likes: 890, comments: 56 },
+
+  const baseReels = [
+    {
+      videoUrl:
+        'https://videos.pexels.com/video-files/3373028/3373028-sd_640_360_25fps.mp4',
+    },
+    {
+      videoUrl:
+        'https://videos.pexels.com/video-files/3387410/3387410-sd_640_360_25fps.mp4',
+    },
+    {
+      videoUrl:
+        'https://videos.pexels.com/video-files/3428136/3428136-sd_640_360_25fps.mp4',
+    },
   ]
 
-  return Response.json({ reels: mockReels, page, hasMore: true })
+  const reels = baseReels.map((reel, index) => {
+    const id = `${page}-${index}`
+
+    return {
+      id,
+      videoUrl: reel.videoUrl,
+      username: `creator${page}${index}`,
+      avatar: `https://i.pravatar.cc/40?u=${id}`,
+      likes: Math.floor(Math.random() * 1000),
+      comments: Math.floor(Math.random() * 100),
+    }
+  })
+
+  return Response.json({
+    reels,
+    page,
+    hasMore: page < 10, // simulate 10 pages max
+  })
 }
