@@ -3,27 +3,50 @@ export async function apiCall(
   options: RequestInit = {}
 ) {
   const token =
-    typeof window !== 'undefined'
-      ? localStorage.getItem('token')
-      : null
+    typeof window !== "undefined"
+      ? localStorage.getItem("token")
+      : null;
+
+  const isFormData = options.body instanceof FormData;
 
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(options.headers as Record<string, string>),
-  }
+  };
 
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(url, {
-    ...options,
-    headers,
-  })
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}${url}`,
+    {
+      ...options,
+      headers,
+      body:
+        !isFormData && options.body && typeof options.body === "object"
+          ? JSON.stringify(options.body)
+          : options.body,
+    }
+  );
+
+  let data;
+
+  try {
+    data = await res.json();
+  } catch {
+    data = null;
+  }
 
   if (!res.ok) {
-    throw new Error(await res.text())
+    // Auto logout if token expired
+    if (res.status === 401 && typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+
+    throw new Error(data?.message || "Something went wrong");
   }
 
-  return res.json()
+  return data;
 }
