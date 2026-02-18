@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { api } from '@/lib/api'
+import { apiCall } from '@/lib/api'
 import { useAuth } from '@/context/AuthContext'
 
 export default function LoginPage() {
@@ -22,7 +22,7 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const data = await api('/auth/login', {
+      const data = await apiCall('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       })

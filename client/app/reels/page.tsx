@@ -5,12 +5,19 @@ import ReelCard from '@/components/ReelCard'
 import { apiCall } from '@/lib/api'
 
 interface Reel {
-  id: string
+  _id: string
   videoUrl: string
-  username: string
-  avatar: string
-  likes: number
-  comments: number
+  user: {
+    username: string
+    avatar: string
+  }
+  likesCount: number
+  commentsCount: number
+}
+
+interface ReelsResponse {
+  reels: Reel[]
+  hasMore: boolean
 }
 
 export default function ReelsPage() {
@@ -27,26 +34,28 @@ export default function ReelsPage() {
     setLoading(true)
 
     try {
-      const data = await apiCall(`/api/reels?page=${page}`)
+      const data: ReelsResponse = await apiCall(`/reels?page=${page}`)
 
-      setReels((prev) => [...prev, ...data.reels])
+      setReels(prev => [...prev, ...data.reels])
       setHasMore(data.hasMore)
-      setPage((prev) => prev + 1)
-    } catch (e) {
-      console.error('Failed to load reels:', e)
+      setPage(prev => prev + 1)
+    } catch (err) {
+      console.error('Failed to load reels:', err)
     } finally {
       setLoading(false)
     }
   }, [page, loading, hasMore])
 
+  // Initial load
   useEffect(() => {
     loadReels()
-  }, [])
+  }, []) // only once
 
+  // Infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
+      entries => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
           loadReels()
         }
       },
@@ -59,7 +68,7 @@ export default function ReelsPage() {
     return () => {
       if (current) observer.unobserve(current)
     }
-  }, [loadReels])
+  }, [loadReels, hasMore, loading])
 
   if (loading && reels.length === 0) {
     return (
@@ -70,9 +79,11 @@ export default function ReelsPage() {
   }
 
   return (
-    <div className="h-screen overflow-y-scroll snap-y snap-mandatory">
-      {reels.map((reel) => (
-        <ReelCard key={reel.id} reel={reel} />
+    <div className="h-screen overflow-y-scroll snap-y snap-mandatory bg-black">
+      {reels.map(reel => (
+        <div key={reel._id} className="snap-start h-screen">
+          <ReelCard reel={reel} />
+        </div>
       ))}
 
       {hasMore && (
@@ -80,7 +91,7 @@ export default function ReelsPage() {
           ref={observerRef}
           className="h-20 flex items-center justify-center text-gray-400"
         >
-          {loading ? 'Loading more...' : ''}
+          {loading && 'Loading more...'}
         </div>
       )}
     </div>

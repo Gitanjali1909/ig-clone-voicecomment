@@ -13,6 +13,7 @@ interface Comment {
 }
 
 interface CommentsProps {
+  reelId: string
   onClose: () => void
 }
 

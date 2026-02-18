@@ -11,18 +11,20 @@ import {
 import Comments from '@/components/Comments'
 
 interface Reel {
-  id: string
+  _id: string
   videoUrl: string
-  username: string
-  avatar: string
+  user: {
+    username: string
+    avatar?: string
+  }
   caption?: string
-  likes: number
-  comments: number
+  likesCount: number
+  commentsCount: number
 }
 
 export default function ReelCard({ reel }: { reel: Reel }) {
   const [liked, setLiked] = useState(false)
-  const [likeCount, setLikeCount] = useState(reel.likes)
+  const [likeCount, setLikeCount] = useState(reel.likesCount)
   const [likeAnimation, setLikeAnimation] = useState(false)
   const [showComments, setShowComments] = useState(false)
 
@@ -38,7 +40,7 @@ export default function ReelCard({ reel }: { reel: Reel }) {
   }
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/reels/${reel.id}`
+    const url = `${window.location.origin}/reels/${reel._id}`
 
     if (navigator.share) {
       await navigator.share({
@@ -51,7 +53,7 @@ export default function ReelCard({ reel }: { reel: Reel }) {
     }
   }
 
-  // 🔥 Only play when visible
+  // Only play when visible
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -98,13 +100,13 @@ export default function ReelCard({ reel }: { reel: Reel }) {
       <div className="absolute bottom-0 left-0 right-0 p-4 pb-20 flex items-end justify-between">
         <div className="flex items-end gap-3 flex-1">
           <img
-            src={reel.avatar || '/placeholder.svg'}
-            alt={`${reel.username}'s profile`}
+            src={reel.user.avatar || '/placeholder.svg'}
+            alt={`${reel.user.username}'s profile`}
             className="w-12 h-12 rounded-full border-2 border-white"
           />
           <div className="flex-1">
             <p className="text-white font-semibold text-sm">
-              {reel.username}
+              {reel.user.username}
             </p>
             {reel.caption && (
               <p className="text-white text-xs line-clamp-2 mt-1">
@@ -121,8 +123,6 @@ export default function ReelCard({ reel }: { reel: Reel }) {
         <motion.button
           onClick={handleLike}
           className="flex flex-col items-center gap-1.5"
-          aria-label={liked ? 'Unlike reel' : 'Like reel'}
-          title={liked ? 'Unlike reel' : 'Like reel'}
         >
           <motion.div
             animate={
@@ -150,14 +150,12 @@ export default function ReelCard({ reel }: { reel: Reel }) {
         <motion.button
           onClick={() => setShowComments(true)}
           className="flex flex-col items-center gap-1.5"
-          aria-label="Open comments"
-          title="Open comments"
         >
           <AiOutlineComment className="w-7 h-7 text-white" />
           <span className="text-white text-xs font-semibold">
-            {reel.comments > 999
-              ? (reel.comments / 1000).toFixed(1) + 'k'
-              : reel.comments}
+            {reel.commentsCount > 999
+              ? (reel.commentsCount / 1000).toFixed(1) + 'k'
+              : reel.commentsCount}
           </span>
         </motion.button>
 
@@ -165,17 +163,14 @@ export default function ReelCard({ reel }: { reel: Reel }) {
         <motion.button
           onClick={handleShare}
           className="flex flex-col items-center gap-1.5"
-          aria-label="Share reel"
-          title="Share reel"
         >
           <AiOutlineShareAlt className="w-7 h-7 text-white" />
         </motion.button>
       </div>
 
-      {/* Comments Modal */}
       {showComments && (
         <Comments
-          reelId={reel.id}
+          reelId={reel._id}
           onClose={() => setShowComments(false)}
         />
       )}

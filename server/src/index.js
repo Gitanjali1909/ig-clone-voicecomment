@@ -8,6 +8,7 @@ import postRoutes from "./routes/post.routes.js";
 import reelRoutes from "./routes/reel.routes.js";
 import commentRoutes from "./routes/comment.routes.js";
 import voiceRoutes from "./routes/voicenote.routes.js";
+import cors from "cors";
 
 
 dotenv.config();
@@ -15,6 +16,11 @@ connectDB();
 
 const app = express();
 app.use(express.json());
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true
+}));
+
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
