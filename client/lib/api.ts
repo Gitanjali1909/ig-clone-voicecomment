@@ -1,4 +1,4 @@
-export async function apiCall(
+export async function api(
   url: string,
   options: RequestInit = {}
 ) {
