@@ -1,40 +1,54 @@
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 
-export const signup = async (req, res, next) => {
+export const authUser = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
 
-    await User.create({
-      username,
-      email,
-      password // 👈 plain password, model will hash it
-    });
+    // 🧠 Basic validation
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and password are required",
+      });
+    }
 
-    res.status(201).json({ message: "User created" });
-  } catch (err) {
-    next(err);
-  }
-};
+    const normalizedEmail = email.toLowerCase();
 
-export const login = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
+    let user = await User.findOne({ email: normalizedEmail });
 
-    const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found" });
+    // 🔥 If user does NOT exist → create
+    if (!user) {
+      user = await User.create({
+        username: username || normalizedEmail.split("@")[0],
+        email: normalizedEmail,
+        password, // hashed in model
+      });
+    } else {
+      // 🔐 If user exists → check password
+      const isMatch = await user.matchPassword(password);
 
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch)
-      return res.status(401).json({ message: "Invalid credentials" });
+      if (!isMatch) {
+        return res.status(401).json({
+          message: "Invalid credentials",
+        });
+      }
+    }
 
+    // 🎯 Generate token
     const token = jwt.sign(
       { id: user._id },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    res.json({ token, user });
+    // 🚫 Remove password before sending user
+    const userData = user.toObject();
+    delete userData.password;
+
+    res.json({
+      token,
+      user: userData,
+    });
   } catch (err) {
     next(err);
   }

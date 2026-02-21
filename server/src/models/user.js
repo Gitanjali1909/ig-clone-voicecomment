@@ -16,15 +16,21 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// 🔐 hash password before save
-userSchema.pre("save", async function () {
-  if (!this.isModified("password")) return;
-  this.password = await bcrypt.hash(this.password, 10);
+// 🔐 Hash password before saving
+userSchema.pre("save", async function (next) {
+  try {
+    if (!this.isModified("password")) return next();
+
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
 
-// 🔍 compare password during login
+// 🔑 Compare password
 userSchema.methods.matchPassword = async function (enteredPassword) {
-  return bcrypt.compare(enteredPassword, this.password);
+  return await bcrypt.compare(enteredPassword, this.password);
 };
 
 export default mongoose.model("User", userSchema);
